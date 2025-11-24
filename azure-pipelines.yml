@@ -1,0 +1,36 @@
+# Maven
+# Build your Java project and run tests with Apache Maven.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/java
+
+trigger:
+- master
+
+pool:
+  name: 'myagent'
+
+steps:
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: 'git clone https://github.com/IntelliqDevops/maven.git'
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: 'cd /home/azureuser/myagent/_work/2/s;mvn package'
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+       cat <<EOF > Dockerfile
+       FROM tomee
+       COPY webapp/target/webapp.war /usr/local/tomee/webapps/myapp.war
+       EOF
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: 'docker build -t intelliqit.azurecr.io/javaapp .'
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: 'docker push intelliqit.azurecr.io/javaapp'
